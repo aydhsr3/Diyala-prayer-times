@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مواقيت الصلاة - ديالى</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/adhan@4.0.1/dist/Adhan.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f3f3f3; color: #333; padding: 20px; }
+    body.night { background: #121212; color: #fff; }
+    .time-box { background: #fff; border-radius: 12px; padding: 15px; margin: 10px auto; width: 90%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    body.night .time-box { background: #1e1e1e; color: #fff; }
+    button, select { margin-top: 20px; padding: 10px; border: none; border-radius: 8px; background: #00897b; color: white; font-size: 16px; cursor: pointer; }
+    select { background: white; color: black; }
+    button:hover { background: #00695c; }
+  </style>
+</head>
+<body>
+  <h1>مواقيت الصلاة - ديالى</h1>
+  <div class="time-box" id="fajr">الفجر: ...</div>
+  <div class="time-box" id="sunrise">الشروق: ...</div>
+  <div class="time-box" id="dhuhr">الظهر: ...</div>
+  <div class="time-box" id="asr">العصر: ...</div>
+  <div class="time-box" id="maghrib">المغرب: ...</div>
+  <div class="time-box" id="isha">العشاء: ...</div>
+
+  <br>
+  <label for="adhanSelect">اختر صوت الأذان:</label>
+  <select id="adhanSelect">
+    <option value="dossari">الدوسري</option>
+    <option value="qatami">ناصر القطامي</option>
+    <option value="mecca">أذان مكة</option>
+    <option value="madinah">أذان المدينة</option>
+  </select>
+
+  <button onclick="toggleTheme()">تبديل الوضع الليلي</button>
+  <button onclick="playAdhan()">تشغيل الأذان الآن</button>
+
+  <audio id="adhanPlayer" src="" hidden></audio>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('night');
+    }
+
+    function updatePrayerTimes(lat, lon) {
+      const date = new Date();
+      const coordinates = new adhan.Coordinates(lat, lon);
+      const params = adhan.CalculationMethod.MuslimWorldLeague();
+      params.madhab = adhan.Madhab.Shafi;
+      const prayerTimes = new adhan.PrayerTimes(coordinates, date, params);
+      const formatter = new Intl.DateTimeFormat('ar-EG', { hour: 'numeric', minute: 'numeric' });
+
+      document.getElementById("fajr").textContent = "الفجر: " + formatter.format(prayerTimes.fajr);
+      document.getElementById("sunrise").textContent = "الشروق: " + formatter.format(prayerTimes.sunrise);
+      document.getElementById("dhuhr").textContent = "الظهر: " + formatter.format(prayerTimes.dhuhr);
+      document.getElementById("asr").textContent = "العصر: " + formatter.format(prayerTimes.asr);
+      document.getElementById("maghrib").textContent = "المغرب: " + formatter.format(prayerTimes.maghrib);
+      document.getElementById("isha").textContent = "العشاء: " + formatter.format(prayerTimes.isha);
+    }
+
+    function playAdhan() {
+      const selection = document.getElementById("adhanSelect").value;
+      const audio = document.getElementById("adhanPlayer");
+      audio.src = "audio/" + selection + ".mp3";
+      audio.play();
+    }
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(position => {
+        updatePrayerTimes(position.coords.latitude, position.coords.longitude);
+      }, error => {
+        alert("تعذر الحصول على الموقع، سيتم استخدام موقع ديالى الافتراضي.");
+        updatePrayerTimes(33.7655, 44.2803);
+      });
+    } else {
+      alert("المتصفح لا يدعم الموقع الجغرافي.");
+      updatePrayerTimes(33.7655, 44.2803);
+    }
+  </script>
+</body>
+</html>
